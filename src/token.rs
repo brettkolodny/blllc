@@ -2,14 +2,19 @@ use std::fmt;
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum TokenType {
+  // TYPES
   INT(u32),
   STR(String),
+  IDENT(String),
+  // SYMBOLS
   LPAREN,
   RPAREN,
   LBRACE,
   RBRACE,
-  EOF,
+  LBRACKET,
+  RBRACKET,
   ADD,
+  EOF,
   SUB,
   MUL,
   DIV,
@@ -28,8 +33,11 @@ pub enum TokenType {
   SLTOE,
   SGTOE,
   BNOT,
-  INVALID
-  
+  AT,
+  DAT,
+  // KEY WORDS
+  DEF,
+  INVALID,
 }
 
 #[derive(Clone, Debug)]

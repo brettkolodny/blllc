@@ -23,37 +23,44 @@ impl<'a> Lexer<'a> {
     self.col += 1;
 
     if let Some(c) = character {
-      if c.is_ascii_digit() {
-        self.lex_int(c)
-      } else {
-        match c {
-          '(' => Token::new(TokenType::LPAREN, self.row, self.col),
-          ')' => Token::new(TokenType::RPAREN, self.row, self.col),
-          '{' => Token::new(TokenType::LBRACE, self.row, self.col),
-          '}' => Token::new(TokenType::RBRACE, self.row, self.col),
-          '+' => Token::new(TokenType::ADD, self.row, self.col),
-          '-' => Token::new(TokenType::SUB, self.row, self.col),
-          '*' => Token::new(TokenType::MUL, self.row, self.col),
-          '/' => Token::new(TokenType::DIV, self.row, self.col),
-          '%' => Token::new(TokenType::MOD, self.row, self.col),
-          '&' => Token::new(TokenType::BAND, self.row, self.col),
-          '|' => Token::new(TokenType::BOR, self.row, self.col),
-          '^' => Token::new(TokenType::BXOR, self.row, self.col),
-          '~' => Token::new(TokenType::BNOT, self.row, self.col),
-          '=' => Token::new(TokenType::EQ, self.row, self.col),
-          ';' => {
-            self.next_line();
-            self.next()
-          }
-          '\'' | '"' => self.lex_string(c),
-          '>' | '<' | 'S' | '!' => self.lex_multi_char(c),
-          ' ' => self.next(),
-          '\n' => {
-            self.row += 1;
-            self.next()
-          }
-          _ => Token::new(TokenType::EOF, self.row, self.col),
+      match c {
+        '(' => Token::new(TokenType::LPAREN, self.row, self.col),
+        ')' => Token::new(TokenType::RPAREN, self.row, self.col),
+        '{' => Token::new(TokenType::LBRACE, self.row, self.col),
+        '}' => Token::new(TokenType::RBRACE, self.row, self.col),
+        '[' => Token::new(TokenType::LBRACKET, self.row, self.col),
+        ']' => Token::new(TokenType::RBRACKET, self.row, self.col),
+        '+' => Token::new(TokenType::ADD, self.row, self.col),
+        '-' => Token::new(TokenType::SUB, self.row, self.col),
+        '*' => Token::new(TokenType::MUL, self.row, self.col),
+        '/' => Token::new(TokenType::DIV, self.row, self.col),
+        '%' => Token::new(TokenType::MOD, self.row, self.col),
+        '&' => Token::new(TokenType::BAND, self.row, self.col),
+        '|' => Token::new(TokenType::BOR, self.row, self.col),
+        '^' => Token::new(TokenType::BXOR, self.row, self.col),
+        '~' => Token::new(TokenType::BNOT, self.row, self.col),
+        '=' => Token::new(TokenType::EQ, self.row, self.col),
+        ';' => {
+          self.next_line();
+          self.next()
         }
+        '\'' | '"' => self.lex_string(c),
+        '>' | '<' | 'S' | '!' | '@' => self.lex_multi_char(c),
+        ' ' => self.next(),
+        '\n' => {
+          self.row += 1;
+          self.col = 0;
+          self.next()
+        }
+        c if c.is_ascii_digit() => self.lex_int(c),
+        c if c.is_ascii_alphabetic() => {
+          let word = self.read_word(c);
+          match word.as_str() {
+            "def" => Token::new(TokenType::DEF, self.row, self.col),
+            _ => Token::new(TokenType::IDENT(word), self.row, self.col)
+          }
+        }
+        _ => Token::new(TokenType::EOF, self.row, self.col),
       }
     } else {
       Token::new(TokenType::EOF, self.row, self.col)
@@ -120,6 +127,8 @@ impl<'a> Lexer<'a> {
       "S>=" => Token::new(TokenType::SGTOE, self.row, self.col),
       "S<=" => Token::new(TokenType::SLTOE, self.row, self.col),
       "!=" => Token::new(TokenType::NEQ, self.row, self.col),
+      "@" => Token::new(TokenType::AT, self.row, self.col),
+      "@@" => Token::new(TokenType::DAT, self.row, self.col),
       _ => Token::new(TokenType::EOF, self.row, self.col),
     }
   }
@@ -161,6 +170,7 @@ impl<'a> Lexer<'a> {
       && character != Some(&')')
       && character != Some(&'{')
       && character != Some(&'}')
+      && character != Some(&'\n')
     {
       word.push(*character.unwrap());
 
