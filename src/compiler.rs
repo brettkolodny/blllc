@@ -35,19 +35,28 @@ impl Compiler {
         match expression.op {
           Op::Num(i) => {
             let num_string = {
-              let tmp = i.to_string();
-              if tmp.len() < 2 {
+              let tmp = format!("{:x}", i);
+              if tmp.len() % 2 != 0 {
                 format!("0{}", tmp)
               } else {
                 tmp
               }
             };
 
-            byte_code = vec![vec!["60".to_owned(), num_string], byte_code].concat();
+            let push_code = {
+              let num_bytes = num_string.len() / 2;
+
+              if num_bytes > 32 {
+                Err("Number too large")
+              } else {
+                Ok(format!("{:x}", 96 + (num_bytes - 1)))
+              }
+            };
+            byte_code = vec![vec![push_code?, num_string], byte_code].concat();
           }
           _ => {
             byte_code = vec![byte_code, self.compile_expression(&expression)?].concat();
-          },
+          }
         }
       }
 
