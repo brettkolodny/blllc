@@ -26,6 +26,7 @@ pub enum Op {
   Mul,
   Div,
   Sub,
+  Mod,
   Start,
   End,
   Num(u32),

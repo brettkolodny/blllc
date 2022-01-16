@@ -20,7 +20,7 @@ impl Compiler {
 
   fn compile_expression(&self, expression: &Expression) -> Result<Vec<String>, String> {
     match expression.op {
-      Op::Add | Op::Div | Op::Sub | Op::Mul => self.compile_arithmetic(expression),
+      Op::Add | Op::Div | Op::Sub | Op::Mul | Op::Mod => self.compile_arithmetic(expression),
       _ => Err(String::from("Error")),
     }
   }
@@ -58,6 +58,7 @@ impl Compiler {
             Op::Mul => "02".to_owned(),
             Op::Sub => "03".to_owned(),
             Op::Div => "04".to_owned(),
+            Op::Mod => "06".to_owned(),
             _ => return Err(String::from("Not arimetic expression")),
           }
         };

@@ -51,6 +51,7 @@ impl<'a> Parser<'a> {
       TokenType::SUB => self.parse_arithmetic(Op::Sub),
       TokenType::MUL => self.parse_arithmetic(Op::Mul),
       TokenType::DIV => self.parse_arithmetic(Op::Div),
+      TokenType::MOD => self.parse_arithmetic(Op::Mod),
       TokenType::INT(i) => Ok(Expression {
         op: Op::Num(i),
         exprs: vec![],
