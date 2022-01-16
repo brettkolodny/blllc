@@ -23,6 +23,9 @@ impl Expression {
 #[derive(Debug, Copy, Clone)]
 pub enum Op {
   Add,
+  Mul,
+  Div,
+  Sub,
   Start,
   End,
   Num(u32),

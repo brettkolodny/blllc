@@ -47,23 +47,21 @@ impl<'a> Parser<'a> {
         self.advance_tokens();
         self.parse_expression()
       }
-      TokenType::ADD => self.parse_add(),
+      TokenType::ADD => self.parse_arithmetic(Op::Add),
+      TokenType::SUB => self.parse_arithmetic(Op::Sub),
+      TokenType::MUL => self.parse_arithmetic(Op::Mul),
+      TokenType::DIV => self.parse_arithmetic(Op::Div),
       TokenType::INT(i) => Ok(Expression {
         op: Op::Num(i),
         exprs: vec![],
       }),
       TokenType::EOF => Ok(Expression::end_program()),
-      _ => {
-        Err(String::from("Error pase_expression"))
-      }
+      _ => Err(String::from("Error pase_expression")),
     }
   }
 
-  fn parse_add(&mut self) -> Result<Expression, String> {
-    let mut add_expr = Expression {
-      op: Op::Add,
-      exprs: vec![],
-    };
+  fn parse_arithmetic(&mut self, op: Op) -> Result<Expression, String> {
+    let mut add_expr = Expression { op, exprs: vec![] };
 
     let mut exprs = vec![];
 
@@ -74,8 +72,6 @@ impl<'a> Parser<'a> {
       exprs.push(self.parse_expression()?);
     }
 
-    self.advance_tokens();
-    // exprs.push(self.parse_expression()?);
     self.advance_tokens();
 
     add_expr.exprs = exprs;
