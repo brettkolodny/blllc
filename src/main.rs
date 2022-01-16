@@ -1,14 +1,18 @@
-mod lexer;
 mod token;
+mod lexer;
+mod ast;
+mod parser;
+mod compiler;
 
 #[cfg(test)]
 mod tests;
 
+use crate::lexer::Lexer;
+use crate::parser::Parser;
+use crate::compiler::Compiler;
+use clap::{App, Arg};
 use std::fs::read_to_string;
 use std::path::Path;
-use clap::{App, Arg};
-use crate::lexer::Lexer;
-use crate::token::TokenType;
 
 fn main() {
     let matches = App::new("Brett's Lovely Little Language Compiler")
@@ -27,11 +31,18 @@ fn main() {
         let path = Path::new(input);
         let file_str = read_to_string(path).expect(&format!("Could not open file at {}", &input));
 
-        let mut lexer = Lexer::new(&file_str);
-        let mut token = lexer.next();
-        while token.token_type != TokenType::EOF {
-            println!("{:?}", token);
-            token = lexer.next();
+        let lexer = Lexer::new(&file_str);
+        let mut parser = Parser::new(lexer);
+
+        if let Ok(ast) = parser.parse_program() {
+            let compiler = Compiler::new(ast);
+            let byte_code = compiler.compile().expect("Compilation error");
+            
+            println!("{}", byte_code);
+        } else {
+            std::process::exit(1);
         }
+    } else {
+        std::process::exit(1);
     }
 }

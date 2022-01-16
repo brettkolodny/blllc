@@ -95,7 +95,7 @@ fn basic_contract() {
     LPAREN,
     EQ,
     LPAREN,
-    IDENT(String::from("div")),
+    DIV,
     LPAREN,
     IDENT(String::from("calldataload")),
     INT(0x00),
@@ -141,7 +141,7 @@ fn basic_contract() {
     (def 'scratch 0x00)
     (def 'identity 0xac37eebb)
     (def 'function (function-hash code-body)
-      (when (= (div (calldataload 0x00) (exp 2 224)) function-hash)
+      (when (= (/ (calldataload 0x00) (exp 2 224)) function-hash)
         code-body))
     (returnlll
       (function identity
