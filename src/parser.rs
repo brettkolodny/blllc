@@ -52,6 +52,10 @@ impl<'a> Parser<'a> {
       TokenType::MUL => self.parse_arithmetic(Op::Mul),
       TokenType::DIV => self.parse_arithmetic(Op::Div),
       TokenType::MOD => self.parse_arithmetic(Op::Mod),
+      TokenType::LT => self.parse_arithmetic(Op::Lt),
+      TokenType::BAND => self.parse_arithmetic(Op::And),
+      TokenType::BOR => self.parse_arithmetic(Op::Or),
+      TokenType::BXOR => self.parse_arithmetic(Op::XOr),
       TokenType::INT(i) => Ok(Expression {
         op: Op::Num(i),
         exprs: vec![],

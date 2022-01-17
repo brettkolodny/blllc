@@ -20,7 +20,10 @@ impl Compiler {
 
   fn compile_expression(&self, expression: &Expression) -> Result<Vec<String>, String> {
     match expression.op {
-      Op::Add | Op::Div | Op::Sub | Op::Mul | Op::Mod => self.compile_arithmetic(expression),
+      Op::Add | Op::Div | Op::Sub | Op::Mul | Op::Mod | Op::And | Op::Or | Op::XOr => {
+        self.compile_arithmetic(expression)
+      }
+      Op::Lt => self.compile_binary(expression),
       _ => Err(String::from("Error")),
     }
   }
@@ -68,6 +71,9 @@ impl Compiler {
             Op::Sub => "03".to_owned(),
             Op::Div => "04".to_owned(),
             Op::Mod => "06".to_owned(),
+            Op::And => "16".to_owned(),
+            Op::Or => "17".to_owned(),
+            Op::XOr => "18".to_owned(),
             _ => return Err(String::from("Not arimetic expression")),
           }
         };
@@ -77,7 +83,34 @@ impl Compiler {
 
       Ok(byte_code)
     } else {
-      Err(String::from("Not enough arguments in add"))
+      self.compile_expression(&arith_expr.exprs[0])
+    }
+  }
+
+  fn compile_binary(&self, bin_expr: &Expression) -> Result<Vec<String>, String> {
+    if bin_expr.exprs.len() != 2 {
+      Err("Too many arguments in expression".to_owned())
+    } else {
+      let left = self.compile_expression(&bin_expr.exprs[0])?;
+      let right = self.compile_expression(&bin_expr.exprs[1])?;
+
+      let op_code = {
+        match bin_expr.op {
+          Op::Lt => "10".to_owned(),
+          _ => return Err(String::from("Not binary expression")),
+        }
+      };
+
+      let byte_code = vec![
+        right,
+        vec!["7F".to_owned()],
+        left,
+        vec!["7F".to_owned()],
+        vec![op_code],
+      ]
+      .concat();
+
+      Ok(byte_code)
     }
   }
 }
