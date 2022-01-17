@@ -47,6 +47,13 @@ fn basic_int() {
 }
 
 #[test]
+fn single_int() {
+  let expected = vec![LPAREN, INT(5), RPAREN];
+  let input = "(5)";
+  test(expected, input);
+}
+
+#[test]
 fn basic_string() {
   let expected = vec![
     STR(String::from("foo-bar")),

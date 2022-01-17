@@ -43,7 +43,7 @@ impl<'a> Parser<'a> {
 
   fn parse_expression(&mut self) -> Result<Expression, String> {
     match self.current_token.token_type {
-      TokenType::LPAREN => {
+      TokenType::LPAREN | TokenType::RPAREN => {
         self.advance_tokens();
         self.parse_expression()
       }

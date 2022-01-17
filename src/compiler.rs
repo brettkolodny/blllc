@@ -20,10 +20,32 @@ impl Compiler {
 
   fn compile_expression(&self, expression: &Expression) -> Result<Vec<String>, String> {
     match expression.op {
+      Op::Num(i) => {
+        let num_string = {
+          let tmp = format!("{:x}", i);
+          if tmp.len() % 2 != 0 {
+            format!("0{}", tmp)
+          } else {
+            tmp
+          }
+        };
+
+        let push_code = {
+          let num_bytes = num_string.len() / 2;
+
+          if num_bytes > 32 {
+            Err("Number too large")
+          } else {
+            Ok(format!("{:x}", 96 + (num_bytes - 1)))
+          }
+        };
+        Ok(vec![push_code?, num_string])
+      }
       Op::Add | Op::Div | Op::Sub | Op::Mul | Op::Mod | Op::And | Op::Or | Op::XOr => {
         self.compile_arithmetic(expression)
       }
       Op::Lt => self.compile_binary(expression),
+      Op::End => Ok(Vec::new()),
       _ => Err(String::from("Error")),
     }
   }

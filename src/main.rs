@@ -1,15 +1,15 @@
-mod token;
-mod lexer;
 mod ast;
-mod parser;
 mod compiler;
+mod lexer;
+mod parser;
+mod token;
 
 #[cfg(test)]
 mod tests;
 
+use crate::compiler::Compiler;
 use crate::lexer::Lexer;
 use crate::parser::Parser;
-use crate::compiler::Compiler;
 use clap::{App, Arg};
 use std::fs::read_to_string;
 use std::path::Path;
@@ -34,13 +34,16 @@ fn main() {
         let lexer = Lexer::new(&file_str);
         let mut parser = Parser::new(lexer);
 
-        if let Ok(ast) = parser.parse_program() {
-            let compiler = Compiler::new(ast);
-            let byte_code = compiler.compile().expect("Compilation error");
-            
-            println!("{}", byte_code);
-        } else {
-            std::process::exit(1);
+        match parser.parse_program() {
+            Ok(ast) => {
+                let compiler = Compiler::new(ast);
+                let byte_code = compiler.compile().expect("Compilation error");
+                println!("{}", byte_code);
+            }
+            Err(e) => {
+                eprintln!("{}", e);
+                std::process::exit(1);
+            }
         }
     } else {
         std::process::exit(1);
