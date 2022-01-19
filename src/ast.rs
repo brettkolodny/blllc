@@ -38,6 +38,8 @@ pub enum Op {
   Eq,
   NotEq,
   If,
+  When,
+  Unless,
   Start,
   End,
   Num(u32),

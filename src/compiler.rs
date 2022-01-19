@@ -35,7 +35,7 @@ impl Compiler {
                 .expect("No destination found")
             };
 
-            let dest = { 
+            let dest = {
               let tmp = format!("{:x}", byte_dest);
               if tmp.len() % 2 != 0 {
                 format!("0{}", tmp)
@@ -62,7 +62,6 @@ impl Compiler {
         let num_vec = {
           let mut bytes = Vec::new();
           let tmp = format!("{:x}", i);
-          
           let mut byte = String::new();
           for char in tmp.chars() {
             byte.push(char);
@@ -76,13 +75,11 @@ impl Compiler {
           if byte.len() > 0 {
             bytes.push(format!("0{}", byte));
           }
-          
           bytes
         };
 
         let push_code = {
           let num_bytes = num_vec.len();
-          
           if num_bytes > 32 {
             Err("Number too large")
           } else {
@@ -100,6 +97,7 @@ impl Compiler {
       Op::Lt | Op::LtOE | Op::Gt | Op::GtOE | Op::Eq | Op::NotEq => self.compile_binary(expression),
       Op::Not => self.compile_unary(expression),
       Op::If => self.compile_if(expression),
+      Op::When | Op::Unless => self.compile_when_or_unless(expression),
       Op::End => Ok(Vec::new()),
       _ => Err(String::from("Error")),
     }
@@ -167,6 +165,32 @@ impl Compiler {
     Ok(byte_code.concat())
   }
 
+  fn compile_when_or_unless(&mut self, when_expr: &Expression) -> Result<Vec<String>, String> {
+    if when_expr.exprs.len() != 2 {
+      return Err("Invalid number of arguments".to_owned());
+    }
+
+    let comp_expr = self.compile_expression(&when_expr.exprs[0])?;
+    let then_expr = self.compile_expression(&when_expr.exprs[1])?;
+
+    let dest_next = self.pc;
+    let jump_next = vec!["60".to_owned(), format!("jump-{}", dest_next)];
+
+    let mut byte_code = Vec::new();
+    byte_code.push(comp_expr);
+
+    if let Op::When = when_expr.op {
+      byte_code.push(vec!["15".to_owned()]);
+    }
+    
+    byte_code.push(jump_next);
+    byte_code.push(vec!["57".to_owned()]);
+    byte_code.push(then_expr);
+    byte_code.push(vec![format!("dest-{}", dest_next)]);
+
+    Ok(byte_code.concat())
+  }
+
   fn compile_binary(&mut self, bin_expr: &Expression) -> Result<Vec<String>, String> {
     if bin_expr.exprs.len() != 2 {
       Err("Too many arguments in expression".to_owned())
@@ -222,7 +246,7 @@ impl Compiler {
 
   fn compile_unary(&mut self, unary_expr: &Expression) -> Result<Vec<String>, String> {
     if unary_expr.exprs.len() != 1 {
-      return Err("Too many arguments".to_owned());
+      return Err("Invalid number of arguments".to_owned());
     }
 
     let byte_code = vec![

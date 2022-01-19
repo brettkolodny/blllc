@@ -68,6 +68,8 @@ impl<'a> Parser<'a> {
       }),
       TokenType::IDENT(i) => match i.as_ref() {
         "if" => self.parse_expression(Op::If),
+        "when" => self.parse_expression(Op::When),
+        "unless" => self.parse_expression(Op::Unless),
         _ => Err(String::from("Error pase_expression")),
       },
       TokenType::EOF => Ok(Expression::end_program()),
