@@ -26,13 +26,13 @@ impl<'a> Parser<'a> {
     self.peek_token = self.lexer.next();
   }
 
-  pub fn parse_program(&mut self) -> Result<Expression, String> {
+  pub fn parse(&mut self) -> Result<Expression, String> {
     let mut ast = Expression::new_program();
 
     let mut expressions: Vec<Expression> = vec![];
 
     while self.current_token.token_type != TokenType::EOF {
-      expressions.push(self.parse_expression()?);
+      expressions.push(self.parse_program()?);
       self.advance_tokens();
     }
 
@@ -41,31 +41,41 @@ impl<'a> Parser<'a> {
     Ok(ast)
   }
 
-  fn parse_expression(&mut self) -> Result<Expression, String> {
-    match self.current_token.token_type {
+  fn parse_program(&mut self) -> Result<Expression, String> {
+    match &self.current_token.token_type {
       TokenType::LPAREN | TokenType::RPAREN => {
         self.advance_tokens();
-        self.parse_expression()
+        self.parse_program()
       }
-      TokenType::ADD => self.parse_arithmetic(Op::Add),
-      TokenType::SUB => self.parse_arithmetic(Op::Sub),
-      TokenType::MUL => self.parse_arithmetic(Op::Mul),
-      TokenType::DIV => self.parse_arithmetic(Op::Div),
-      TokenType::MOD => self.parse_arithmetic(Op::Mod),
-      TokenType::LT => self.parse_arithmetic(Op::Lt),
-      TokenType::BAND => self.parse_arithmetic(Op::And),
-      TokenType::BOR => self.parse_arithmetic(Op::Or),
-      TokenType::BXOR => self.parse_arithmetic(Op::XOr),
+      TokenType::ADD => self.parse_expression(Op::Add),
+      TokenType::SUB => self.parse_expression(Op::Sub),
+      TokenType::MUL => self.parse_expression(Op::Mul),
+      TokenType::DIV => self.parse_expression(Op::Div),
+      TokenType::MOD => self.parse_expression(Op::Mod),
+      TokenType::LT => self.parse_expression(Op::Lt),
+      TokenType::LTOE => self.parse_expression(Op::LtOE),
+      TokenType::GT => self.parse_expression(Op::Gt),
+      TokenType::GTOE => self.parse_expression(Op::GtOE),
+      TokenType::EQ => self.parse_expression(Op::Eq),
+      TokenType::NEQ => self.parse_expression(Op::NotEq),
+      TokenType::BAND => self.parse_expression(Op::And),
+      TokenType::BOR => self.parse_expression(Op::Or),
+      TokenType::BXOR => self.parse_expression(Op::XOr),
+      TokenType::BNOT => self.parse_expression(Op::Not),
       TokenType::INT(i) => Ok(Expression {
-        op: Op::Num(i),
+        op: Op::Num(*i),
         exprs: vec![],
       }),
+      TokenType::IDENT(i) => match i.as_ref() {
+        "if" => self.parse_expression(Op::If),
+        _ => Err(String::from("Error pase_expression")),
+      },
       TokenType::EOF => Ok(Expression::end_program()),
       _ => Err(String::from("Error pase_expression")),
     }
   }
 
-  fn parse_arithmetic(&mut self, op: Op) -> Result<Expression, String> {
+  fn parse_expression(&mut self, op: Op) -> Result<Expression, String> {
     let mut add_expr = Expression { op, exprs: vec![] };
 
     let mut exprs = vec![];
@@ -74,7 +84,7 @@ impl<'a> Parser<'a> {
       && self.peek_token.token_type != TokenType::EOF
     {
       self.advance_tokens();
-      exprs.push(self.parse_expression()?);
+      exprs.push(self.parse_program()?);
     }
 
     self.advance_tokens();

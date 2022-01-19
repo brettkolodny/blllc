@@ -116,7 +116,6 @@ impl<'a> Lexer<'a> {
   fn lex_multi_char(&mut self, curr_char: char) -> Token {
     let word = self.read_word(curr_char);
 
-    println!("{}", &word);
     match word.as_str() {
       ">=" => Token::new(TokenType::GTOE, self.row, self.col),
       "<=" => Token::new(TokenType::LTOE, self.row, self.col),

@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Expression {
   pub op: Op,
   pub exprs: Vec<Expression>,
@@ -30,7 +30,14 @@ pub enum Op {
   And,
   Or,
   XOr,
+  Not,
   Lt,
+  LtOE,
+  Gt,
+  GtOE,
+  Eq,
+  NotEq,
+  If,
   Start,
   End,
   Num(u32),

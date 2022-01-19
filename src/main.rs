@@ -34,9 +34,9 @@ fn main() {
         let lexer = Lexer::new(&file_str);
         let mut parser = Parser::new(lexer);
 
-        match parser.parse_program() {
+        match parser.parse() {
             Ok(ast) => {
-                let compiler = Compiler::new(ast);
+                let mut compiler = Compiler::new(ast);
                 let byte_code = compiler.compile().expect("Compilation error");
                 println!("{}", byte_code);
             }
